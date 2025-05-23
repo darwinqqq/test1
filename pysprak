@@ -1,0 +1,17 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+
+spark = SparkSession.builder.appName("ProductsCategories").getOrCreate()
+
+def get_product_category_pairs(products, categories, product_category):
+    # Джоин с категориями
+    joined = products.join(product_category, on="product_id", how="left") \
+                     .join(categories, on="category_id", how="left") \
+                     .select("product_name", "category_name")
+
+    # Продукты без категории
+    products_no_category = joined.filter(col("category_name").isNull()) \
+                                 .select("product_name") \
+                                 .distinct()
+
+    return joined, products_no_category
